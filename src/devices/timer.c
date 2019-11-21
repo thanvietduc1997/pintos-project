@@ -84,18 +84,50 @@ timer_elapsed (int64_t then)
   return timer_ticks () - then;
 }
 
+static struct list list_timer_blocked_threads;
+
 /* Sleeps for approximately TICKS timer ticks.  Interrupts must
    be turned on. */
 void
 timer_sleep (int64_t ticks) 
 {
+  if (ticks <= 0) 
+    return;
+
+  // struct thread *cur = thread_current ();
   int64_t start = timer_ticks ();
 
   ASSERT (intr_get_level () == INTR_ON);
-  while (timer_elapsed (start) < ticks) 
-    thread_yield ();
+  while (timer_elapsed (start))
+    thread_yield();
+  // cur->start = timer_ticks ();
+  // cur->ticks = ticks;
+  // list_push_back(&list_timer_blocked_threads, &cur->elem);
+  // thread_block();
 }
 
+// void 
+// alarm_init (void)
+// {
+//   list_init(&list_timer_blocked_threads);
+// }
+
+// void
+// alarm_check(void)
+// {
+//   struct list_elem *t;
+//   for (t = list_begin (&list_timer_blocked_threads); 
+//        t != list_end (&list_timer_blocked_threads);
+//        t = list_next (t))
+//   {
+//     struct thread *thr = list_entry(t, struct thread, elem);
+//     if (timer_elapsed(thr->start) > thr->ticks)
+//     {
+//       thread_unblock(thr);
+//       list_remove(&thr->elem);
+//     }
+//   }
+// }
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
    turned on. */
 void
